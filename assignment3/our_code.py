@@ -144,7 +144,7 @@ def accuracy(y_pred,y_test) :
     m = y_pred.shape[1]
     corr = 0
     for i in range(m) :
-        if y_pred[i]==y_test[i] :
+        if y_pred[:,i]==y_test[:,i] :
             corr += 1
     accu = (corr / m)*100
     return accu
@@ -199,24 +199,28 @@ def model(X,y,layer_dims,split=0.8,epochs=10,learning_rate=0.001,minibatch=False
             cost += compute_cost(AL,y_batch)
             grads = L_model_backward(AL,y_batch,caches)
             parameters = update_parameters(parameters,grads,learning_rate)
-        print("Cost after epoch {} : {}\n".format(epoch,cost))
+        print("Cost after epoch {} : {}\n\n".format(epoch,cost))
         epoch_cost.append(cost)
     
     y_pred = prediction(X_test,parameters)
-    #accu = accuracy(y_pred,y_test)
-    return y_pred,epoch_cost
+    accu = accuracy(y_pred,y_test)
+    return accu,epoch_cost
 
 def main() :
     df = pd.read_csv("heart.csv").values
+    
+    ### Preprocessing - No scaling of data ###
     idx = np.random.permutation(df.shape[0])
     df = df[idx]
     y  = df[:,13]
     y  = y.reshape(1,-1)
     X  = df[:,:13].T
+    
+    ### Running the Model ###
     layer_dims = [13,45,45,45,45,1]
-    y_pred,cost = model(X,y,layer_dims,0.8,100,0.001,False)
-    print("\n")
-    print(y_pred)
+    accu,cost = model(X,y,layer_dims,0.8,100,0.001,False)
+    
+    print("ACCURACY : {}".format(accu))
     plt.plot(cost,'r')
     plt.xlabel("epoch")
     plt.ylabel("cost")
