@@ -7,13 +7,14 @@ def initialize_parameters(layers_dims) :
     L = len(layers_dims)-1
 
     for l in range(1,L+1) :
-        parameters["W"+str(l)] = np.round(np.random.randn(layers_dims[l],layers_dims[l-1])*np.sqrt(2/layers_dims[l-1]),5)
+        parameters["W"+str(l)] = np.random.randn(layers_dims[l],layers_dims[l-1])*np.sqrt(2/layers_dims[l-1])
         parameters["b"+str(l)] = np.zeros((layers_dims[l],1))
 
     return parameters
 
 def sigmoid(Z) :
-    A = np.round(1/(1+np.exp(-Z)),5)
+    A = 1/(1+np.exp(-Z))
+    A = np.clip(A,0.0000001,0.9999999)
     return A
 
 def relu(Z) :
@@ -21,7 +22,7 @@ def relu(Z) :
     return A
 
 def linear_forward(A_prev,W,b) :
-    Z = np.round(np.dot(W,A_prev)+b,5)
+    Z = np.dot(W,A_prev)+b
     cache = (A_prev,b,W,Z)
     return Z,cache
 
@@ -51,19 +52,17 @@ def L_model_forward(X, parameters) :
     b = parameters["b"+str(L)]
     AL, cache = linear_activation_forward(A,W,b,"sigmoid")
     caches.append(cache)
-
     return AL,caches
 
 def compute_cost(AL,Y) :
     m = Y.shape[1]
     cost = -np.sum(np.multiply(Y,np.log(AL)) + np.multiply(1-Y,np.log(1-AL))) / m
-    cost = np.squeeze(cost)  
-    cost = np.round(cost,5)
+    cost = np.squeeze(cost)
     return cost
 
 def sigmoid_backward(dA,Z) :
     s = sigmoid(Z)
-    dZ = np.round(dA * s * (1-s),5)
+    dZ = dA * s * (1-s)
     return dZ
 
 def relu_backward(dA,Z) :
@@ -130,12 +129,12 @@ def prediction(X,parameters) :
     for l in range(1,L) :
         W = parameters["W"+str(l)]
         b = parameters["b"+str(l)]
-        Z = np.round(np.dot(W,A_prev)+b,5)
+        Z = np.dot(W,A_prev)+b
         A_prev = relu(Z)
     
     W = parameters["W"+str(L)]
     b = parameters["b"+str(L)]
-    Z = np.round(np.dot(W,A_prev)+b,5)
+    Z = np.dot(W,A_prev)+b
     y = sigmoid(Z)
     y[y <= 0.5] = 0
     y[y > 0.5]  = 1
@@ -203,15 +202,26 @@ def model(X,y,layer_dims,split=0.8,epochs=10,learning_rate=0.001,minibatch=False
         print("Cost after epoch {} : {}\n".format(epoch,cost))
         epoch_cost.append(cost)
     
-    y_pred = prediction(X,parameters)
-    accu = accuracy(y_pred,y_test)
-    return accu,epoch_cost
-
-    
-    return epoch_cost
+    y_pred = prediction(X_test,parameters)
+    #accu = accuracy(y_pred,y_test)
+    return y_pred,epoch_cost
 
 def main() :
-    pass
+    df = pd.read_csv("heart.csv").values
+    idx = np.random.permutation(df.shape[0])
+    df = df[idx]
+    y  = df[:,13]
+    y  = y.reshape(1,-1)
+    X  = df[:,:13].T
+    layer_dims = [13,45,45,45,45,1]
+    y_pred,cost = model(X,y,layer_dims,0.8,100,0.001,False)
+    print("\n")
+    print(y_pred)
+    plt.plot(cost,'r')
+    plt.xlabel("epoch")
+    plt.ylabel("cost")
+    plt.show()
+    
 
 if __name__=="__main__":
     main()
