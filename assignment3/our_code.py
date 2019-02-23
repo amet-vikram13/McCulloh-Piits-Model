@@ -122,7 +122,6 @@ def update_parameters(parameters,grads,learning_rate) :
     return parameters
 
 def prediction(X,parameters) :
-
     L = len(parameters) // 2
     A_prev = X
 
@@ -177,7 +176,7 @@ def prepare_minibatch(X,y,minibatch_size) :
 
     return batches
 
-def model(X,y,layer_dims,split=0.8,epochs=10,learning_rate=0.001,minibatch=False) :
+def model(X,y,layer_dims,split=0.8,epochs=100,learning_rate=0.001,minibatch=False,verbose=True) :
     X_train,y_train,X_test,y_test = train_test_split(X,y,split)
     
     if minibatch :
@@ -186,9 +185,9 @@ def model(X,y,layer_dims,split=0.8,epochs=10,learning_rate=0.001,minibatch=False
     parameters = initialize_parameters(layer_dims)
     
     epoch_cost = []
-
     for epoch in range(epochs) :
-        print("######## EPOCH {} ########".format(epoch))
+        if verbose and epoch%10==0 :
+            print("######## EPOCH {} ########".format(epoch+1))
         cost = 0
         batches = [(X_train,y_train)]
         if minibatch :
@@ -199,33 +198,33 @@ def model(X,y,layer_dims,split=0.8,epochs=10,learning_rate=0.001,minibatch=False
             cost += compute_cost(AL,y_batch)
             grads = L_model_backward(AL,y_batch,caches)
             parameters = update_parameters(parameters,grads,learning_rate)
-        print("Cost after epoch {} : {}\n\n".format(epoch,cost))
+        if verbose and epoch%10==0 :
+            print("Cost after epoch {} : {}\n\n".format(epoch+1,cost))
         epoch_cost.append(cost)
     
-    y_pred = prediction(X_test,parameters)
-    accu = accuracy(y_pred,y_test)
-    return accu,epoch_cost
+    y_pred_test  = prediction(X_test,parameters)
+    y_pred_train = prediction(X_train,parameters)
+    accu_test = accuracy(y_pred_test,y_test)
+    accu_train = accuracy(y_pred_train,y_train)
+    return accu_test,accu_train,epoch_cost
 
 def main() :
     df = pd.read_csv("heart.csv").values
-    
     ### Preprocessing - No scaling of data ###
     idx = np.random.permutation(df.shape[0])
     df = df[idx]
     y  = df[:,13]
     y  = y.reshape(1,-1)
     X  = df[:,:13].T
-    
     ### Running the Model ###
     layer_dims = [13,45,45,45,45,1]
-    accu,cost = model(X,y,layer_dims,0.8,100,0.001,False)
-    
-    print("ACCURACY : {}".format(accu))
-    plt.plot(cost,'r')
+    accu_test,accu_train,cost = model(X,y,layer_dims)
+    print("TRAIN ACCURACY : {}".format(accu_train))
+    print("TEST ACCURACY : {}".format(accu_test))
+    plt.plot(cost,'b')
     plt.xlabel("epoch")
     plt.ylabel("cost")
     plt.show()
-    
 
 if __name__=="__main__":
     main()
