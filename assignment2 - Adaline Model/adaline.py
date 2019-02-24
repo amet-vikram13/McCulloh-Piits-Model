@@ -10,6 +10,9 @@ class AdalineModel(object) :
         self.b = -1
         self.X = -1
         self.y = -1
+        self.X_test = -1
+        self.y_test = -1
+        self.y_quantize = -1
         self.Z = -1
         self.A = -1
     
@@ -23,6 +26,8 @@ class AdalineModel(object) :
         # random sample in range [-1,1)
         self.X = -1 + 2*np.random.rand(self.inp,self.m)
         self.y = -1 + 2*np.random.rand(1,self.m)
+        self.X_test = -1 + 2*np.random.rand(self.inp,self.m)
+        self.y_test = -1 + 2*np.random.rand(1,self.m)
         return self.X,self.y
     
     def give_data(self,X,y) :
@@ -43,7 +48,7 @@ class AdalineModel(object) :
         err = np.squeeze(err)
         return err
 
-    def _update_parameters(self,learning_rate=0.01) :
+    def _update_parameters(self,learning_rate) :
         delta = (self.y - self.A)*learning_rate
         for i in range(self.m) :
             self.W = self.W + delta[:,i][0]*self.X[:,i].reshape(-1,1)
@@ -59,6 +64,24 @@ class AdalineModel(object) :
             self.epoch_err.append(err)
             self._update_parameters(learning_rate)
             print("error : {}".format(err))
+    
+    def quantize(self) :
+        self.y_quantize = self.A
+        self.y_quantize[self.y_quantize <= self.thr] = -1
+        self.y_quantize[self.y_quantize > self.thr]  = 1
+        self.y_quantize = self.y_quantize.astype("int")
+        return self.y_quantize
+
+    def rmse(self,data="test") :
+        if data=="test" :
+            y_pred = np.dot(self.W.T,self.X_test) + self.b
+            y_corr = self.y_test
+        elif data=="train" :
+            y_pred = self.A
+            y_corr = self.y
+        rmse = np.sqrt(np.sum(np.square(y_corr - y_pred)) / self.m)
+        rmse = np.squeeze(rmse)
+        print("{} RMSE : {}".format(data,rmse))
 
     def plot_error(self) :
         plt.plot(self.epoch_err,'r')
