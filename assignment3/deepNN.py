@@ -143,6 +143,7 @@ class DeepNeuralNetwork(object) :
     def run(self,epochs=100,learning_rate=0.001,verbose=True) :
         self.epoch_cost = []
         self.epoch_accu = []
+        self.epoch_mse  = []
         for epoch in range(epochs) :
             if verbose and epoch%10==0 :
                 print("######## EPOCH {} ########".format(epoch+1))
@@ -155,6 +156,7 @@ class DeepNeuralNetwork(object) :
                 print("Cost after epoch {} : {}\n\n".format(epoch+1,cost))
             self.epoch_cost.append(cost)
             self.prediction()
+            self.epoch_mse.append(self.mse_error())
             self.epoch_accu.append(self.accuracy())
         return self.parameters
     
@@ -168,6 +170,12 @@ class DeepNeuralNetwork(object) :
         plt.plot(self.epoch_accu,'b')
         plt.xlabel("epoch")
         plt.ylabel("accuracy")
+        plt.show()
+    
+    def plot_mse(self) :
+        plt.plot(self.epoch_mse,'r')
+        plt.xlabel("epoch")
+        plt.ylabel("MSE")
         plt.show()
 
     def prediction(self,data="test") :
@@ -190,6 +198,15 @@ class DeepNeuralNetwork(object) :
         self.y_pred[self.y_pred <= 0.5] = 0
         self.y_pred[self.y_pred > 0.5]  = 1
         return self.y_pred
+    
+    def mse_error(self,data="test") :
+        if data=="test" :
+            y_corr = self.y_test
+        elif data=="train" :
+            y_corr = self.y_train
+        m = y_corr.shape[1]
+        err = np.sum(np.square(y_corr - self.y_pred)) / m
+        return err
 
     def accuracy(self,data="test") :
         if data=="test" :
