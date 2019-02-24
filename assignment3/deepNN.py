@@ -21,13 +21,18 @@ class DeepNeuralNetwork(object) :
         self.X_train, self.X_test = self.X[:,train_idx], self.X[:,test_idx]
         self.y_train, self.y_test = self.y[:,train_idx], self.y[:,test_idx]
     
-    def initialize_parameters(self) :
+    def initialize_parameters(self,type="He") :
         self.parameters = {}
         L = len(self.layer_dims)-1
 
-        for l in range(1,L+1) :
-            self.parameters["W"+str(l)] = np.random.randn(self.layer_dims[l],self.layer_dims[l-1])*np.sqrt(2/self.layer_dims[l-1])
-            self.parameters["b"+str(l)] = np.zeros((self.layer_dims[l],1))
+        if type=="He" :
+            for l in range(1,L+1) :
+                self.parameters["W"+str(l)] = np.random.randn(self.layer_dims[l],self.layer_dims[l-1])*np.sqrt(2/self.layer_dims[l-1])
+                self.parameters["b"+str(l)] = np.zeros((self.layer_dims[l],1))
+        elif type=="random" :
+            for l in range(1,L+1) :
+                self.parameters["W"+str(l)] = np.random.randn(self.layer_dims[l],self.layer_dims[l-1])*10
+                self.parameters["b"+str(l)] = np.zeros((self.layer_dims[l],1))
 
         return self.parameters
 
