@@ -142,6 +142,7 @@ class DeepNeuralNetwork(object) :
 
     def run(self,epochs=100,learning_rate=0.001,verbose=True) :
         self.epoch_cost = []
+        self.epoch_accu = []
         for epoch in range(epochs) :
             if verbose and epoch%10==0 :
                 print("######## EPOCH {} ########".format(epoch+1))
@@ -153,12 +154,20 @@ class DeepNeuralNetwork(object) :
             if verbose and epoch%10==0 :
                 print("Cost after epoch {} : {}\n\n".format(epoch+1,cost))
             self.epoch_cost.append(cost)
+            self.prediction()
+            self.epoch_accu.append(self.accuracy())
         return self.parameters
     
     def plot_cost(self) :
-        plt.plot(self.epoch_cost,'b')
+        plt.plot(self.epoch_cost,'r')
         plt.xlabel("epoch")
         plt.ylabel("cost")
+        plt.show()
+    
+    def plot_accu(self) :
+        plt.plot(self.epoch_accu,'b')
+        plt.xlabel("epoch")
+        plt.ylabel("accuracy")
         plt.show()
 
     def prediction(self,data="test") :
