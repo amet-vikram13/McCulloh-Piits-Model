@@ -7,6 +7,18 @@ class DeepNeuralNetwork(object) :
         self.layer_dims = dimensions
     
     def process_data(self,df) :
+        minn = df["age"].min()
+        maxx = df["age"].max()
+        df["age"] = (df["age"] - minn) / (maxx - minn)
+        minn = df["trestbps"].min()
+        maxx = df["trestbps"].max()
+        df["trestbps"] = (df["trestbps"] - minn) / (maxx - minn)
+        minn = df["chol"].min()
+        maxx = df["chol"].max()
+        df["chol"] = (df["chol"] - minn) / (maxx - minn)
+        minn = df["thalach"].min()
+        maxx = df["thalach"].max()
+        df["thalach"] = (df["thalach"] - minn) / (maxx - minn)
         df = df.values
         idx = np.random.permutation(df.shape[0])
         df = df[idx]
@@ -20,6 +32,7 @@ class DeepNeuralNetwork(object) :
         train_idx, test_idx = indices[:split],indices[split:]
         self.X_train, self.X_test = self.X[:,train_idx], self.X[:,test_idx]
         self.y_train, self.y_test = self.y[:,train_idx], self.y[:,test_idx]
+        return self.X_train,self.y_train
     
     def initialize_parameters(self) :
         self.parameters = {}
@@ -153,9 +166,9 @@ class DeepNeuralNetwork(object) :
             if verbose and epoch%10==0 :
                 print("Cost after epoch {} : {}\n\n".format(epoch+1,cost))
             self.epoch_cost.append(cost)
-            self.prediction()
-            self.epoch_mse.append(self.mse_error())
-            self.epoch_accu.append(self.accuracy())
+            self.prediction("train")
+            self.epoch_mse.append(self.mse_error("train"))
+            self.epoch_accu.append(self.accuracy("train"))
         return self.parameters
     
     def plot_cost(self) :

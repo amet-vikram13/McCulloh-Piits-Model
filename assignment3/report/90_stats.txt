@@ -1,0 +1,6 @@
+final train mse  : 0.22727272727272727
+final train cost : 0.49381944234805897
+final train mse  : 77.27272727272727
+
+test accu : 90.1639344262295
+mse       : 0.09836065573770492
